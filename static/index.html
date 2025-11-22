@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户认证系统</title>
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #6b8cbc;
+            --accent-color: #ff7e5f;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: var(--dark-color);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+
+        .subtitle {
+            color: var(--secondary-color);
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 25px;
+            width: 100%;
+            max-width: 500px;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-title {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid var(--light-color);
+            padding-bottom: 10px;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: var(--transition);
+            text-align: center;
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+        }
+
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: var(--dark-color);
+        }
+
+        .btn-warning:hover {
+            background-color: #e0a800;
+        }
+
+        .btn-info {
+            background-color: var(--info-color);
+            color: white;
+        }
+
+        .btn-info:hover {
+            background-color: #138496;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.2);
+            outline: none;
+        }
+
+        .token-display {
+            background-color: var(--light-color);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-top: 20px;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 0.9rem;
+            border: 1px dashed #ccc;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .token-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .status {
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            margin-top: 20px;
+            display: none;
+        }
+
+        .status.success {
+            background-color: rgba(40, 167, 69, 0.2);
+            border: 1px solid var(--success-color);
+            color: var(--success-color);
+        }
+
+        .status.error {
+            background-color: rgba(220, 53, 69, 0.2);
+            border: 1px solid var(--danger-color);
+            color: var(--danger-color);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            width: 90%;
+            max-width: 500px;
+            padding: 30px;
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--dark-color);
+        }
+
+        .user-profile {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--light-color);
+            border-radius: var(--border-radius);
+        }
+
+        .profile-item {
+            margin-bottom: 10px;
+        }
+
+        .profile-item strong {
+            display: inline-block;
+            width: 100px;
+        }
+
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .card {
+                max-width: 100%;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>用户认证系统</h1>
+        <p class="subtitle">基于JWT令牌的安全认证</p>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2 class="card-title">用户操作</h2>
+            <div class="btn-group">
+                <button class="btn btn-primary" id="registerBtn">注册新用户</button>
+                <button class="btn btn-success" id="loginBtn">用户登录</button>
+                <button class="btn btn-warning" id="changePasswordBtn">修改密码</button>
+                <button class="btn btn-info" id="viewUsersBtn">查看用户列表</button>
+                <button class="btn btn-info" id="profileBtn" style="display: none;">用户信息</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">JWT令牌信息</h2>
+            <div class="token-info">
+                <span>令牌状态:</span>
+                <span id="tokenStatus">未登录</span>
+            </div>
+            <div class="token-info">
+                <span>当前用户:</span>
+                <span id="currentUser">无</span>
+            </div>
+            <div class="token-display" id="tokenDisplay">
+                暂无令牌信息
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-warning" id="copyTokenBtn" style="display: none;">复制令牌</button>
+                <button class="btn btn-primary" id="verifyTokenBtn" style="display: none;">验证令牌</button>
+                <button class="btn btn-danger" id="logoutBtn" style="display: none;">退出登录</button>
+            </div>
+        </div>
+
+        <div class="card" id="profileCard" style="display: none;">
+            <h2 class="card-title">用户信息</h2>
+            <div class="user-profile" id="userProfile">
+                <p>加载中...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 注册模态框 -->
+    <div class="modal" id="registerModal">
+        <div class="modal-content">
+            <span class="close" id="closeRegister">&times;</span>
+            <h2>用户注册</h2>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="registerUsername">用户名</label>
+                    <input type="text" id="registerUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">密码</label>
+                    <input type="password" id="registerPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">注册</button>
+            </form>
+            <div class="status" id="registerStatus"></div>
+        </div>
+    </div>
+
+    <!-- 登录模态框 -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <span class="close" id="closeLogin">&times;</span>
+            <h2>用户登录</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginUsername">用户名</label>
+                    <input type="text" id="loginUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">密码</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn btn-success" style="width: 100%;">登录</button>
+            </form>
+            <div class="status" id="loginStatus"></div>
+        </div>
+    </div>
+
+    <!-- 修改密码模态框 -->
+    <div class="modal" id="changePasswordModal">
+        <div class="modal-content">
+            <span class="close" id="closeChangePassword">&times;</span>
+            <h2>修改密码</h2>
+            <form id="changePasswordForm">
+                <div class="form-group">
+                    <label for="changeUsername">用户名</label>
+                    <input type="text" id="changeUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="oldPassword">旧密码</label>
+                    <input type="password" id="oldPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">新密码</label>
+                    <input type="password" id="newPassword" required>
+                </div>
+                <button type="submit" class="btn btn-warning" style="width: 100%;">修改密码</button>
+            </form>
+            <div class="status" id="changePasswordStatus"></div>
+        </div>
+    </div>
+
+    <!-- 用户列表模态框 -->
+    <div class="modal" id="usersModal">
+        <div class="modal-content">
+            <span class="close" id="closeUsers">&times;</span>
+            <h2>用户列表</h2>
+            <div id="usersList">
+                <p>加载中...</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>用户认证系统 &copy; 2023 - 基于Gin和JWT</p>
+    </footer>
+
+    <script>
+        // API基础URL
+        const API_BASE = 'http://localhost:8088';
+
+        // DOM元素
+        const registerBtn = document.getElementById('registerBtn');
+        const loginBtn = document.getElementById('loginBtn');
+        const changePasswordBtn = document.getElementById('changePasswordBtn');
+        const viewUsersBtn = document.getElementById('viewUsersBtn');
+        const profileBtn = document.getElementById('profileBtn');
+        const copyTokenBtn = document.getElementById('copyTokenBtn');
+        const verifyTokenBtn = document.getElementById('verifyTokenBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        
+        const registerModal = document.getElementById('registerModal');
+        const loginModal = document.getElementById('loginModal');
+        const changePasswordModal = document.getElementById('changePasswordModal');
+        const usersModal = document.getElementById('usersModal');
+        
+        const tokenStatus = document.getElementById('tokenStatus');
+        const currentUser = document.getElementById('currentUser');
+        const tokenDisplay = document.getElementById('tokenDisplay');
+        const profileCard = document.getElementById('profileCard');
+        const userProfile = document.getElementById('userProfile');
+        
+        // 当前JWT令牌和用户信息
+        let currentToken = null;
+        let currentUsername = null;
+
+        // 从本地存储加载令牌
+        function loadTokenFromStorage() {
+            const savedToken = localStorage.getItem('jwtToken');
+            const savedUsername = localStorage.getItem('username');
+            
+            if (savedToken && savedUsername) {
+                currentToken = savedToken;
+                currentUsername = savedUsername;
+                updateTokenDisplay(currentToken);
+                updateUIForLoggedInUser();
+            }
+        }
+
+        // 保存令牌到本地存储
+        function saveTokenToStorage(token, username) {
+            localStorage.setItem('jwtToken', token);
+            localStorage.setItem('username', username);
+        }
+
+        // 清除本地存储的令牌
+        function clearTokenFromStorage() {
+            localStorage.removeItem('jwtToken');
+            localStorage.removeItem('username');
+        }
+
+        // 显示模态框
+        function showModal(modal) {
+            modal.style.display = 'flex';
+        }
+
+        // 隐藏模态框
+        function hideModal(modal) {
+            modal.style.display = 'none';
+        }
+
+        // 显示状态消息
+        function showStatus(element, message, isSuccess) {
+            element.textContent = message;
+            element.className = isSuccess ? 'status success' : 'status error';
+            element.style.display = 'block';
+            
+            // 3秒后自动隐藏
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 3000);
+        }
+
+        // 更新令牌显示
+        function updateTokenDisplay(token) {
+            currentToken = token;
+            
+            if (token) {
+                tokenStatus.textContent = '已登录';
+                tokenStatus.style.color = 'var(--success-color)';
+                currentUser.textContent = currentUsername;
+                tokenDisplay.textContent = token;
+                
+                // 显示令牌操作按钮
+                copyTokenBtn.style.display = 'block';
+                verifyTokenBtn.style.display = 'block';
+                logoutBtn.style.display = 'block';
+                profileBtn.style.display = 'block';
+            } else {
+                tokenStatus.textContent = '未登录';
+                tokenStatus.style.color = 'var(--danger-color)';
+                currentUser.textContent = '无';
+                tokenDisplay.textContent = '暂无令牌信息';
+                
+                // 隐藏令牌操作按钮
+                copyTokenBtn.style.display = 'none';
+                verifyTokenBtn.style.display = 'none';
+                logoutBtn.style.display = 'none';
+                profileBtn.style.display = 'none';
+                profileCard.style.display = 'none';
+            }
+        }
+
+        // 更新UI为已登录状态
+        function updateUIForLoggedInUser() {
+            updateTokenDisplay(currentToken);
+        }
+
+        // 复制令牌到剪贴板
+        copyTokenBtn.addEventListener('click', () => {
+            if (currentToken) {
+                navigator.clipboard.writeText(currentToken)
+                    .then(() => {
+                        alert('令牌已复制到剪贴板');
+                    })
+                    .catch(err => {
+                        console.error('复制失败:', err);
+                        alert('复制失败，请手动复制');
+                    });
+            }
+        });
+
+        // 验证令牌
+        verifyTokenBtn.addEventListener('click', async () => {
+            if (!currentToken) {
+                alert('没有可验证的令牌');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/verify-token`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert(`令牌验证成功，用户: ${data.data.username}`);
+                } else {
+                    alert(`令牌验证失败: ${data.message}`);
+                    updateTokenDisplay(null);
+                    clearTokenFromStorage();
+                }
+            } catch (error) {
+                console.error('验证令牌时出错:', error);
+                alert('验证令牌时出错');
+            }
+        });
+
+        // 退出登录
+        logoutBtn.addEventListener('click', () => {
+            currentToken = null;
+            currentUsername = null;
+            updateTokenDisplay(null);
+            clearTokenFromStorage();
+            alert('已退出登录');
+        });
+
+        // 获取用户信息
+        profileBtn.addEventListener('click', async () => {
+            if (!currentToken) {
+                alert('请先登录');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/profile`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    profileCard.style.display = 'block';
+                    userProfile.innerHTML = `
+                        <div class="profile-item"><strong>用户名:</strong> ${data.data.profile.name}</div>
+                        <div class="profile-item"><strong>角色:</strong> ${data.data.profile.role}</div>
+                        <div class="profile-item"><strong>状态:</strong> ${data.data.profile.status}</div>
+                    `;
+                } else {
+                    alert(`获取用户信息失败: ${data.message}`);
+                    if (response.status === 401) {
+                        updateTokenDisplay(null);
+                        clearTokenFromStorage();
+                    }
+                }
+            } catch (error) {
+                console.error('获取用户信息时出错:', error);
+                alert('获取用户信息时出错');
+            }
+        });
+
+        // 注册功能
+        registerBtn.addEventListener('click', () => showModal(registerModal));
+        document.getElementById('closeRegister').addEventListener('click', () => hideModal(registerModal));
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
+            const statusElement = document.getElementById('registerStatus');
+            
+            try {
+                const formData = new FormData();
+                formData.append('username', username);
+                formData.append('password', password);
+                
+                const response = await fetch(`${API_BASE}/register`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showStatus(statusElement, '注册成功!', true);
+                    document.getElementById('registerForm').reset();
+                    setTimeout(() => hideModal(registerModal), 1500);
+                } else {
+                    showStatus(statusElement, `注册失败: ${data.message}`, false);
+                }
+            } catch (error) {
+                console.error('注册时出错:', error);
+                showStatus(statusElement, '注册时发生错误，请稍后重试', false);
+            }
+        });
+
+        // 登录功能
+        loginBtn.addEventListener('click', () => showModal(loginModal));
+        document.getElementById('closeLogin').addEventListener('click', () => hideModal(loginModal));
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            const statusElement = document.getElementById('loginStatus');
+            
+            try {
+                const formData = new FormData();
+                formData.append('username', username);
+                formData.append('password', password);
+                
+                const response = await fetch(`${API_BASE}/login`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showStatus(statusElement, '登录成功!', true);
+                    
+                    // 使用后端返回的真实令牌
+                    currentToken = data.data.token;
+                    currentUsername = data.data.user;
+                    
+                    updateTokenDisplay(currentToken);
+                    saveTokenToStorage(currentToken, currentUsername);
+                    
+                    document.getElementById('loginForm').reset();
+                    setTimeout(() => hideModal(loginModal), 1500);
+                } else {
+                    showStatus(statusElement, `登录失败: ${data.message}`, false);
+                }
+            } catch (error) {
+                console.error('登录时出错:', error);
+                showStatus(statusElement, '登录时发生错误，请稍后重试', false);
+            }
+        });
+
+        // 修改密码功能
+        changePasswordBtn.addEventListener('click', () => showModal(changePasswordModal));
+        document.getElementById('closeChangePassword').addEventListener('click', () => hideModal(changePasswordModal));
+
+        document.getElementById('changePasswordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('changeUsername').value;
+            const oldPassword = document.getElementById('oldPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const statusElement = document.getElementById('changePasswordStatus');
+            
+            try {
+                const formData = new FormData();
+                formData.append('username', username);
+                formData.append('old_password', oldPassword);
+                formData.append('new_password', newPassword);
+                
+                const response = await fetch(`${API_BASE}/change-password`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showStatus(statusElement, '密码修改成功!', true);
+                    document.getElementById('changePasswordForm').reset();
+                    setTimeout(() => hideModal(changePasswordModal), 1500);
+                } else {
+                    showStatus(statusElement, `密码修改失败: ${data.message}`, false);
+                }
+            } catch (error) {
+                console.error('修改密码时出错:', error);
+                showStatus(statusElement, '修改密码时发生错误，请稍后重试', false);
+            }
+        });
+
+        // 查看用户列表
+        viewUsersBtn.addEventListener('click', async () => {
+            showModal(usersModal);
+            
+            try {
+                const response = await fetch(`${API_BASE}/users`);
+                const data = await response.json();
+                
+                const usersList = document.getElementById('usersList');
+                
+                if (response.ok && data.data && data.data.users) {
+                    let usersHtml = '';
+                    for (const [username, user] of Object.entries(data.data.users)) {
+                        usersHtml += `
+                            <div style="padding: 10px; border-bottom: 1px solid #eee;">
+                                <strong>用户名:</strong> ${user.Username}<br>
+                                <strong>密码:</strong> ${user.Password.replace(/./g, '*')}
+                            </div>
+                        `;
+                    }
+                    usersList.innerHTML = usersHtml;
+                } else {
+                    usersList.innerHTML = `<p>获取用户列表失败: ${data.message || '未知错误'}</p>`;
+                }
+            } catch (error) {
+                console.error('获取用户列表时出错:', error);
+                document.getElementById('usersList').innerHTML = '<p>获取用户列表时发生错误</p>';
+            }
+        });
+
+        document.getElementById('closeUsers').addEventListener('click', () => hideModal(usersModal));
+
+        // 点击模态框外部关闭
+        window.addEventListener('click', (e) => {
+            if (e.target === registerModal) hideModal(registerModal);
+            if (e.target === loginModal) hideModal(loginModal);
+            if (e.target === changePasswordModal) hideModal(changePasswordModal);
+            if (e.target === usersModal) hideModal(usersModal);
+        });
+
+        // 页面加载时尝试从本地存储加载令牌
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTokenFromStorage();
+        });
+    </script>
+</body>
+</html>
